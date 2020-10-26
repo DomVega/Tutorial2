@@ -11,21 +11,71 @@ public class PlayerScript : MonoBehaviour
 
     public Text score;
 
+    public Text winText;
+
+    public Text livesText;
+
+    public Text loseText;
+
     private int scoreValue = 0;
+
+    private int lives = 3;
+
+    private bool facingRight = true;
+    
+    Animator anim; 
 
     // Start is called before the first frame update
     void Start()
     {
         rd2d = GetComponent<Rigidbody2D>();
         score.text = scoreValue.ToString();
+        winText.text = "";
+        loseText.text = "";
+        SetLivesText();
+        anim = GetComponent<Animator> ();
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
+        
         float hozMovement = Input.GetAxis("Horizontal");
         float vertMovement = Input.GetAxis("Vertical");
         rd2d.AddForce(new Vector2(hozMovement * speed, vertMovement * speed));
+    
+        if (Input.GetKeyDown(KeyCode.D))
+            {
+
+                anim.SetInteger("State", 1);
+
+            }
+        if (Input.GetKeyDown(KeyCode.A))
+            {
+
+                anim.SetInteger("State", 1);
+
+            }
+        if (Input.GetKeyUp(KeyCode.A))
+            {
+
+                anim.SetInteger("State", 0);
+
+            }
+        if (Input.GetKeyUp(KeyCode.D))
+            {
+
+                anim.SetInteger("State", 0);
+
+            }
+        if (facingRight == false && hozMovement > 0)
+            {
+                Flip();
+            }
+        else if (facingRight == true && hozMovement < 0)
+        {
+            Flip();
+        }
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
@@ -36,7 +86,31 @@ public class PlayerScript : MonoBehaviour
             score.text = scoreValue.ToString();
             Destroy(collision.collider.gameObject);
         }
-
+        if (scoreValue == 4)
+        {
+            transform.position = new Vector2(-5.8f, -35.6f);
+            lives = 3;
+            SetLivesText ();
+        }
+        
+         if (scoreValue >= 8)
+        {
+            winText.text = "You win! Game by Domenico Vega";
+        }
+       
+        if (collision.collider.tag == "Enemy")
+        {
+            lives -= 1;
+            SetLivesText();
+            Destroy(collision.collider.gameObject);
+        }
+       
+        if (lives <= 0)
+        {
+            loseText.text = "You Lose!";
+            Destroy(rd2d);
+        }
+    
     }
 
     private void OnCollisionStay2D(Collision2D collision)
@@ -49,6 +123,20 @@ public class PlayerScript : MonoBehaviour
             }
         }
     }
+
+    void SetLivesText ()
+    {
+        livesText.text = "Lives: " + lives.ToString ();
+    }
+
+    void Flip()
+   {
+     facingRight = !facingRight;
+     Vector2 Scaler = transform.localScale;
+     Scaler.x = Scaler.x * -1;
+     transform.localScale = Scaler;
+   }
+
     void Update()
     {
         if (Input.GetKey("escape"))
